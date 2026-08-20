@@ -78,7 +78,7 @@ func callApiHandler(targetApi string, targetURL string, targetVM int) http.Handl
 func main() {
 	// CONFIGURA AQUÍ TUS IPs
 	api1URL := "http://192.168.122.248:8081"          // SUSTITUIR CON LA IP DE LA VM1
-	api2URL := "http://192.168.122.87:8082"          // SUSTITUIR CON LA IP DE LA VM1
+	api2URL := "http://192.168.122.248:8082"          // SUSTITUIR CON LA IP DE LA VM1
 
 	http.HandleFunc("/health", healthHandler)
 	http.HandleFunc("/api3/201907078/call-api1", callApiHandler("API1", api1URL, 1))
