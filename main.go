@@ -10,7 +10,7 @@ import (
 
 // Constantes personalizadas
 const CARNET = "201907078"
-const VM_NUMBER = 1
+const VM_NUMBER = "número de VM correspondiente"
 
 // Estructura para el endpoint /health
 type HealthResponse struct {
@@ -35,7 +35,7 @@ func healthHandler(w http.ResponseWriter, r *http.Request) {
 	
 	resp := HealthResponse{
 		Status:    "UP",
-		Message:   "API1 is Ready",
+		Message:   "API# is Ready",
 		Timestamp: time.Now().Format(time.RFC3339),
 		VM:        VM_NUMBER,
 		Carnet:    CARNET,
@@ -76,16 +76,16 @@ func callApiHandler(targetApi string, targetURL string, targetVM int) http.Handl
 			Apiname:    targetApi,
 			Message:    fmt.Sprintf("ERROR: The %s located on the VM%d is not working", targetApi, targetVM),
 			Connection: false,
-			Carnet:     CARNET,
+			Carnet:     CARNET
 		}
 		json.NewEncoder(w).Encode(errorResp)
 	}
 }
 
 func main() {
-	// IMPORTANTE: Sustituye <IP_DE_VM2> con la IP real de tu Máquina Virtual 2
-	api2URL := "http://localhost:8082"            // API2 está en la misma VM1
-	api3URL := "http://<IP_DE_VM2>:8083"          // API3 está en la VM2
+	// IMPORTANTE: Sustituye <IP_DE_VM#> con la IP real de tu Máquina Virtual 
+	api2URL := "http://localhost:8082"           
+	api3URL := "http://<IP_DE_VM#>:8083"          
 
 	// Definición de Endpoints según el enunciado
 	http.HandleFunc("/health", healthHandler)

@@ -14,7 +14,7 @@ RUN CGO_ENABLED=0 GOOS=linux go build -o apiserver main.go
 # Etapa 2: Imagen Final Ligera
 FROM alpine:latest
 
-# Añadimos certificados raíz por si la API necesita hacer peticiones seguras (opcional pero recomendado)
+# Añadimos certificados raíz por si la API necesita hacer peticiones seguras
 RUN apk --no-cache add ca-certificates
 
 WORKDIR /root/
@@ -22,7 +22,7 @@ WORKDIR /root/
 # Copiamos el binario compilado desde la etapa anterior
 COPY --from=builder /app/apiserver .
 
-# Exponemos el puerto (Cámbialo a 8082 o 8083 según la API que estés construyendo)
+# Exponemos el puerto (Cambiar a 8082 u 8083 según la API)
 EXPOSE 8081
 
 # Comando para ejecutar la aplicación
