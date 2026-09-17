@@ -1,0 +1,1 @@
+FROM roldyoran/go-client
