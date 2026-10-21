@@ -1,0 +1,22 @@
+{
+  "distSpecVersion": "1.1.0",
+  "storage": {
+    "rootDirectory": "/var/lib/registry"
+  },
+  "http": {
+    "address": "0.0.0.0",
+    "port": "8443",
+    "tls": {
+      "cert": "/etc/certs/cert.pem",
+      "key": "/etc/certs/key.pem"
+    },
+    "auth": {
+      "htpasswd": {
+        "path": "/etc/zot/htpasswd"
+      }
+    }
+  },
+  "log": {
+    "level": "debug"
+  }
+}

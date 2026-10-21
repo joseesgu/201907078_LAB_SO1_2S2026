@@ -8,4 +8,5 @@ services:
     volumes:
       - ./zot-data:/var/lib/registry
       - ./certs:/etc/certs
+      - ./auth:/etc/zot
       - ./config.json:/etc/zot/config.json
