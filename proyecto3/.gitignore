@@ -1,0 +1,4 @@
+rust-api/target/
+zot-data/
+certs/
+auth/
