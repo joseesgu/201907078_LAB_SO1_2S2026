@@ -2,3 +2,5 @@ rust-api/target/
 zot-data/
 certs/
 auth/
+*.pyc
+__pycache__/
