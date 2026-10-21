@@ -1,7 +1,8 @@
 use actix_web::{post, web, App, HttpResponse, HttpServer, Responder};
 use serde::{Deserialize, Serialize};
+use reqwest::Client;
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 struct WarReport {
     country: String,
     warplanes_in_air: u32,
@@ -11,14 +12,23 @@ struct WarReport {
 
 #[post("/data")]
 async fn receive_report(report: web::Json<WarReport>) -> impl Responder {
-    println!("Reporte recibido: {:?}", report);
+    let client = Client::new();
+    // Apunta al servicio de K8s del Deployment de Go
+    let go_url = std::env::var("GO_CLIENT_URL").unwrap_or_else(|_| "http://go-client-svc:8081/send".to_string());
+
+    let payload = report.into_inner();
     
-    // Aquí agregaremos posteriormente la lógica para enviar el dato a Go (gRPC Client)
-    
-    HttpResponse::Ok().json(serde_json::json!({
-        "status": "success",
-        "message": "Reporte militar procesado correctamente"
-    }))
+    // Envía el dato al cliente Go
+    match client.post(&go_url).json(&payload).send().await {
+        Ok(_) => HttpResponse::Ok().json(serde_json::json!({
+            "status": "success",
+            "message": "Enviado a Go correctamente"
+        })),
+        Err(e) => {
+            eprintln!("Error enviando a Go: {}", e);
+            HttpResponse::InternalServerError().json(serde_json::json!({"status": "error"}))
+        }
+    }
 }
 
 #[actix_web::main]
