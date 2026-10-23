@@ -50,6 +50,9 @@ func conectarValkey() {
 		fmt.Printf("[ERROR] No se pudo conectar a Valkey: %v\n", err)
 	} else {
 		fmt.Println("[INFO] Conectado a Valkey exitosamente.")
+		//Inicializar las llaves en 0 si no existen, para evitar errores de no mostrar información
+		rdb.SetNX(ctx, "total_contenedores_eliminados", 0, 0)
+		rdb.SetNX(ctx, "total_ebpf_events", 0, 0)
 	}
 }
 
@@ -67,9 +70,20 @@ func iniciarAuditorEBPF() {
 		} else if strings.HasPrefix(linea, "EBPF_KILL:") {
 			partes := strings.Split(linea, ":")
 			if len(partes) >= 3 {
-				fmt.Printf("[eBPF] Intercepción confirmada -> Señal %s enviada al PID %s\n", partes[2], partes[1])
+				senal := strings.TrimSpace(partes[2])
+				pid := strings.TrimSpace(partes[1])
+
+				horaActual := time.Now().Format("2006-01-02 15:04:05")
+				fmt.Printf("[%s] [eBPF] Intercepción confirmada -> Señal %s enviada al PID %s\n", horaActual, senal, pid)
+
 				if rdb != nil {
-					rdb.Incr(ctx, "total_contenedores_eliminados")
+					// El contador global suma siempre
+					rdb.Incr(ctx, "total_ebpf_events")
+
+					// El contador de eliminados suma solo si es SIGKILL (9)
+					if senal == "9" {
+						rdb.Incr(ctx, "total_contenedores_eliminados")
+					}
 				}
 			}
 		}
@@ -97,7 +111,9 @@ func configurarCron() {
 	fmt.Println("[INFO] Configurando cronjob de despliegue...")
 	rutaActual, _ := os.Getwd()
 	rutaScript := rutaActual + "/../despliegue_aleatorio.sh"
-	cronJob := fmt.Sprintf("*/2 * * * * %s\n", rutaScript)
+	// Cronjob cada 2 minutos para pruebas, cambiar a cada minuto para versión final
+	//cronJob := fmt.Sprintf("*/2 * * * * %s\n", rutaScript)
+	cronJob := fmt.Sprintf("* * * * * %s\n", rutaScript)
 	os.WriteFile("temp_cron", []byte(cronJob), 0644)
 	exec.Command("crontab", "temp_cron").Run()
 	os.Remove("temp_cron")
@@ -143,9 +159,14 @@ func leerArchivoProc() []Proceso {
 		} else if strings.HasPrefix(linea, "Used RAM:") {
 			partes := strings.Fields(linea)
 			if len(partes) >= 3 && rdb != nil {
+				// Mantiene el valor actual para otras posibles tarjetas
 				rdb.Set(ctx, "used_ram", partes[2], 0)
-				timestamp := time.Now().Unix()
-				rdb.ZAdd(ctx, "ram_historico", redis.Z{Score: float64(timestamp), Member: partes[2]})
+
+				// NUEVO: Guarda el punto en el historial para la gráfica de línea
+				rdb.XAdd(ctx, &redis.XAddArgs{
+					Stream: "historial_ram_stream",
+					Values: map[string]interface{}{"ram": partes[2]},
+				})
 			}
 		} else if strings.HasPrefix(linea, "Free RAM:") {
 			partes := strings.Fields(linea)
@@ -241,13 +262,18 @@ func gestionarContenedores(contenedores []Contenedor) {
 		fmt.Println("[GESTIÓN] El sistema está equilibrado. No se requiere eliminar contenedores.")
 	} else {
 		for _, c := range eliminar {
-			fmt.Printf("[ACCIÓN] Enviando SIGKILL al proceso %d (Contenedor: %s)\n", c.PID, c.Nombre)
+			horaActual := time.Now().Format("2006-01-02 15:04:05")
+			fmt.Printf("[%s] [ACCIÓN] Enviando SIGKILL al proceso %d (Contenedor: %s)\n", horaActual, c.PID, c.Nombre)
 
+			// 1. Disparar señal
 			syscall.Kill(c.PID, syscall.SIGKILL)
 
-			// --- PAUSA ESTRATÉGICA ---
-			time.Sleep(500 * time.Millisecond)
+			// 2. Incrementar contador eBPF en Valkey inmediatamente
+			/*if rdb != nil {
+				rdb.Incr(ctx, "total_contenedores_eliminados")
+			}*/
 
+			time.Sleep(500 * time.Millisecond)
 			exec.Command("docker", "rm", "-f", c.ID).Run()
 		}
 	}

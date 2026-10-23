@@ -6,18 +6,18 @@ bpf_text = """
 #include <uapi/linux/ptrace.h>
 #include <linux/sched.h>
 
-// Interceptar sys_kill estándar[cite: 1]
-int kprobe__sys_kill(struct pt_regs *ctx, pid_t pid, int sig) {
-    if (sig == 9 || sig == 15) {
-        bpf_trace_printk("EBPF_KILL:%d:%d\\n", pid, sig);
+// Interceptar sys_kill de forma estructurada
+TRACEPOINT_PROBE(syscalls, sys_enter_kill) {
+    if (args->sig == 9 || args->sig == 15) {
+        bpf_trace_printk("EBPF_KILL:%d:%d\\n", args->pid, args->sig);
     }
     return 0;
 }
 
-// Interceptar sys_tgkill (Thread Group Kill)
-int kprobe__sys_tgkill(struct pt_regs *ctx, pid_t tgid, pid_t pid, int sig) {
-    if (sig == 9 || sig == 15) {
-        bpf_trace_printk("EBPF_KILL:%d:%d\\n", pid, sig);
+// Interceptar sys_tgkill (por si Docker usa sub-hilos)
+TRACEPOINT_PROBE(syscalls, sys_enter_tgkill) {
+    if (args->sig == 9 || args->sig == 15) {
+        bpf_trace_printk("EBPF_KILL:%d:%d\\n", args->pid, args->sig);
     }
     return 0;
 }

@@ -4,6 +4,8 @@ services:
     container_name: valkey_db
     ports:
       - "6379:6379"
+    volumes:
+      - valkey_data:/data
     restart: unless-stopped
 
   grafana:
@@ -11,6 +13,14 @@ services:
     container_name: grafana_dashboard
     ports:
       - "3000:3000"
+    environment:
+      - GF_INSTALL_PLUGINS=redis-datasource
+    volumes:
+      - grafana_data:/var/lib/grafana
     depends_on:
       - valkey
     restart: unless-stopped
+
+volumes:
+  valkey_data:
+  grafana_data:
