@@ -1,0 +1,8 @@
+apiVersion: db.usac.edu.gt/v1alpha1
+kind: ValkeyInstance
+metadata:
+  name: valkey-server
+  namespace: default
+spec: {}
+  
+  
