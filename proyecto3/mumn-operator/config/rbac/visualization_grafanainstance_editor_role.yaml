@@ -1,0 +1,31 @@
+# permissions for end users to edit grafanainstances.
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  labels:
+    app.kubernetes.io/name: clusterrole
+    app.kubernetes.io/instance: grafanainstance-editor-role
+    app.kubernetes.io/component: rbac
+    app.kubernetes.io/created-by: mumn-operator
+    app.kubernetes.io/part-of: mumn-operator
+    app.kubernetes.io/managed-by: kustomize
+  name: grafanainstance-editor-role
+rules:
+- apiGroups:
+  - visualization.usac.edu.gt
+  resources:
+  - grafanainstances
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - visualization.usac.edu.gt
+  resources:
+  - grafanainstances/status
+  verbs:
+  - get

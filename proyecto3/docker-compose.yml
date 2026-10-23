@@ -1,0 +1,12 @@
+version: '3.8'
+services:
+  zot:
+    image: ghcr.io/project-zot/zot-linux-amd64:latest
+    container_name: zot-registry
+    ports:
+      - "8443:8443"
+    volumes:
+      - ./zot-data:/var/lib/registry
+      - ./certs:/etc/certs
+      - ./auth:/etc/zot
+      - ./config.json:/etc/zot/config.json
