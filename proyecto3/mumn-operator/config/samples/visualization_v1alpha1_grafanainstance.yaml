@@ -1,0 +1,7 @@
+apiVersion: visualization.usac.edu.gt/v1alpha1
+kind: GrafanaInstance
+metadata:
+  name: grafana-server
+  namespace: default
+spec: {}
+  

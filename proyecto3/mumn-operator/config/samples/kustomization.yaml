@@ -1,4 +1,5 @@
 ## Append samples of your project ##
 resources:
 - db_v1alpha1_valkeyinstance.yaml
+- visualization_v1alpha1_grafanainstance.yaml
 #+kubebuilder:scaffold:manifestskustomizesamples

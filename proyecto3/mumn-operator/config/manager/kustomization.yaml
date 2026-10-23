@@ -5,4 +5,4 @@ kind: Kustomization
 images:
 - name: controller
   newName: mumn-operator
-  newTag: v2
+  newTag: v3

@@ -3,4 +3,5 @@
 # It should be run by config/default
 resources:
 - bases/db.usac.edu.gt_valkeyinstances.yaml
+- bases/visualization.usac.edu.gt_grafanainstances.yaml
 #+kubebuilder:scaffold:crdkustomizeresource

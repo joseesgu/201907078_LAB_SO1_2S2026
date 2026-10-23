@@ -50,3 +50,17 @@ rules:
   - patch
   - update
   - watch
+- apiGroups:
+  - visualization.usac.edu.gt
+  resources:
+  - grafanainstances
+  - grafanainstances/status
+  - grafanainstances/finalizers
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
